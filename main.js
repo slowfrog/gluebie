@@ -17,20 +17,8 @@ gameState.preload = function() {
 };
 
 gameState.create = function() {
-  this.level = Level.create(10, 10);
-  for (var i = 0; i < 10; ++i) {
-    this.level.setBoard(i, 0, Level.WALL);
-    this.level.setBoard(0, i, Level.WALL);
-    this.level.setBoard(i, 9, Level.WALL);
-    this.level.setBoard(9, i, Level.WALL);
-  }
-  this.level.setBoard(0, 4, Level.START);
-  this.level.setBoard(9, 5, Level.EXIT);
-
-  this.level.addEntity(Item.create(3, 3, Item.GLUE_TUBE, 5));
-  this.level.addEntity(Item.create(4, 4, Item.BAG_PILE, 2));
-  this.level.addEntity(Item.create(5, 5, Item.GLUE_STAIN));
-  this.boy = Boy.create(6, 8);
+  this.level = Level.parse(Level.LEVEL1);
+  this.boy = Boy.create(this.level.getStartX(), this.level.getStartY());
   this.level.addEntity(this.boy);
   
   // Render board
@@ -52,16 +40,16 @@ gameState.create = function() {
 
 gameState.update = function() {
   // Check input
-  var d = 15; //this.timer.ms - this.last;
+  var d = 15;
   this.last = this.timer.ms;
   if (this.arrows.down.downDuration(d)) {
-    this.boy.moveBy(0, 1);
+    this.stepGame(0, 1);
   } else if (this.arrows.right.downDuration(d)) {
-    this.boy.moveBy(1, 0);
+    this.stepGame(1, 0);
   } else if (this.arrows.up.downDuration(d)) {
-    this.boy.moveBy(0, -1);
+    this.stepGame(0, -1);
   } else if (this.arrows.left.downDuration(d)) {
-    this.boy.moveBy(-1, 0);
+    this.stepGame(-1, 0);
   }
   
   // Render contents
@@ -85,6 +73,17 @@ gameState.update = function() {
     }
   }
   
+};
+
+gameState.stepGame = function(dx, dy) {
+  var x = this.boy.getX() + dx;
+  var y = this.boy.getY() + dy;
+  if ((x >= 0) && (x < this.level.getWidth()) &&
+      (y >= 0) && (y < this.level.getHeight())) {
+    if (this.level.getBoard(x, y) != Level.WALL) {
+      this.boy.moveBy(dx, dy);
+    }
+  }
 };
 
 // Wrap it up

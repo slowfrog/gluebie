@@ -231,6 +231,32 @@ Level.prototype.addEntity = function(e) {
   e.addObserver(this);
 };
 
+Level.prototype.setStartPos = function(x, y) {
+  this.startX = x;
+  this.startY = y;
+};
+
+Level.prototype.getStartX = function() {
+  return this.startX;
+};
+
+Level.prototype.getStartY = function() {
+  return this.startY;
+};
+
+Level.prototype.setExitPos = function(x, y) {
+  this.exitX = x;
+  this.exitY = y;
+};
+
+Level.prototype.getExitX = function() {
+  return this.exitX;
+};
+
+Level.prototype.getExitY = function() {
+  return this.exitY;
+};
+
 Level.prototype.notify = function(e) {
   if (e.getType() === Entity.MOVED) {
     var prevContent = this.getContent(e.getX0(), e.getY0());
@@ -244,3 +270,55 @@ Level.prototype.notify = function(e) {
     console.log("Entity move not processed", e);
   }
 };
+
+Level.parse = function(text) {
+  var height = text.length;
+  var width = text[0].length;
+  var l = Level.create(width, height);
+  for (var y = 0; y < height; ++y) {
+    var line = text[y];
+    for (var x = 0; x < width; ++x) {
+      switch (line[x]) {
+      case "#":
+        l.setBoard(x, y, Level.WALL);
+        break;
+      case ">":
+        l.setBoard(x, y, Level.START);
+        l.setStartPos(x, y);
+        break;
+      case "X":
+        l.setBoard(x, y, Level.EXIT);
+        l.setExitPos(x, y);
+        break;
+      case "G":
+        l.addEntity(Item.create(x, y, Item.GLUE_TUBE, 1));
+        break;
+      case "B":
+        l.addEntity(Item.create(x, y, Item.BAG_PILE, 1));
+        break;
+      default:
+        l.setBoard(x, y, Level.CLEAR);
+      }
+    }
+  }
+  return l;
+};
+
+
+// LEVELS
+Level.LEVEL1 = [
+  "################",
+  "#..#.....#...#.#",
+  "#.....#........#",
+  "#...G....#.....#",
+  "#...G..........#",
+  "#...G..........#",
+  "#..............#",
+  ">..............#",
+  "#..............#",
+  "#....B.........#",
+  "#..............#",
+  "#.........B....#",
+  "#..............#",
+  "#..............X",
+  "################"];
