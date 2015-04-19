@@ -17,16 +17,22 @@ gameState.preload = function() {
 };
 
 gameState.create = function() {
-  this.level = Level.parse(Level.LEVEL2);
-  this.boy = Boy.create(this.level.getStartX(), this.level.getStartY());
-  this.level.addEntity(this.boy);
+  this.arrows = game.input.keyboard.createCursorKeys();
+  this.levelIndex = 0;
+  this.startLevel();
   this.glueCount = 0;
   this.bagCount = 0;
-  this.renderer = new Renderer(this.level, this.boy, game);
   this.renderer.renderBoard();
+};
 
-  this.arrows = game.input.keyboard.createCursorKeys();
+gameState.startLevel = function() {
+  this.clean();
+  this.level = Level.parse(Level.LEVELS[this.levelIndex]);
+  this.boy = Boy.create(this.level.getStartX(), this.level.getStartY());
+  this.level.addEntity(this.boy);
+  this.renderer = new Renderer(this.level, this.boy, game);
   this.mode = Mode.MOVE;
+  this.renderer.renderBoard();
 };
 
 gameState.update = function() {
@@ -75,7 +81,12 @@ gameState.stepGame = function(dx, dy) {
   case Mode.MOVE:
     this.boy.moveBy(dx, dy);
     if (this.level.getBoard(this.boy.getX(), this.boy.getY()) == Level.EXIT) {
-      this.gotoWin();
+      if (this.levelIndex == Level.LEVELS.length - 1) {
+        this.gotoWin();
+      } else {
+        this.levelIndex += 1;
+        this.startLevel();
+      }
     }
     contents = this.level.getContent(this.boy.getX(), this.boy.getY());
     for (var i = contents.length - 1; i >= 0; --i) {
@@ -116,7 +127,7 @@ gameState.stepGame = function(dx, dy) {
     contents = this.level.getContent(this.boy.getX() + dx, this.boy.getY() + dy);
     for (var i = 0; i < contents.length; ++i) {
       if (contents[i] instanceof Robot) {
-        // contents[i].bagRobot();
+        contents[i].setBagged(true, dx, dy);
         this.bagCount -= 1;
         this.mode = Mode.MOVE;
         break;
@@ -147,6 +158,9 @@ gameState.stepGame = function(dx, dy) {
     r.moveBy(move.getDx(), move.getDy());
     if ((r.getX() == this.boy.getX()) && (r.getY() == this.boy.getY())) {
       this.gotoLose();
+    } else if (this.level.hasGlue(r.getX(), r.getY())) {
+      r.setGlued();
+      this.level.removeGlue(r.getX(), r.getY());
     }
   }
 };
@@ -155,26 +169,39 @@ gameState.stepRobot = function(r) {
   if (r.isGlued()) {
     return;
   }
+  
   var dx = Math.sign(this.boy.getX() - r.getX());
   var dy = Math.sign(this.boy.getY() - r.getY());
-  // If not on same line or column, nothing
-  if (dx != 0 && dy != 0) {
-    return;
-  }
-  var d = Math.max(Math.abs(this.boy.getX() - r.getX()),
-                   Math.abs(this.boy.getY() - r.getY()));
-  // If wall, no visibility
-  for (var i = 1; i < d; ++i) {
-    if (this.level.getBoard(r.getX() + dx * i, r.getY() + dy * i) == Level.WALL) {
+  if (r.isBagged()) {
+    dx = r.getDx();
+    dy = r.getDy();
+  } else {
+    // If not on same line or column, nothing
+    if (dx != 0 && dy != 0) {
       return;
     }
+    var d = Math.max(Math.abs(this.boy.getX() - r.getX()),
+                     Math.abs(this.boy.getY() - r.getY()));
+    // If wall, no visibility
+    for (var i = 1; i < d; ++i) {
+      if (this.level.getBoard(r.getX() + dx * i, r.getY() + dy * i) == Level.WALL) {
+        return;
+      }
+    }
+  }
+
+  if (r.isBagged() && this.level.getBoard(r.getX() + dx, r.getY() + dy) == Level.WALL) {
+    r.setBagged(false);
+    return;
   }
   // Ok, robot moves
   return new RobotMove(r, dx, dy);
 };
 
 gameState.clean = function() {
-  this.renderer.clean();
+  if (this.renderer) {
+    this.renderer.clean();
+  }
 };
 
 gameState.gotoWin = function() {
@@ -193,19 +220,27 @@ gameState.shutdown = function() {
 var winState = {};
 winState.preload = function() {
   game.load.image("win", "win.png");
+  game.load.image("restart", "restart.png");
 };
 
 winState.create = function() {
   game.add.image(0, 0, "win");
+  game.add.button(450, 430, "restart", function() {
+    game.state.start("game");
+  });
 };
 
 var loseState = {};
 loseState.preload = function() {
   game.load.image("lose", "lose.png");
+  game.load.image("restart", "restart.png");
 };
 
 loseState.create = function() {
   game.add.image(0, 0, "lose");
+  game.add.button(450, 430, "restart", function() {
+    game.state.start("game");
+  });
 };
 
 

@@ -186,6 +186,9 @@ Robot.create = function(x, y) {
 Robot.prototype._init_ = function(x, y) {
   Entity.prototype._init_.call(this, x, y);
   this.glued = false;
+  this.bagged = false;
+  this.dx = 0;
+  this.dy = 0;
   return this;
 };
 
@@ -195,6 +198,26 @@ Robot.prototype.setGlued = function() {
 
 Robot.prototype.isGlued = function() {
   return this.glued;
+};
+
+Robot.prototype.setBagged = function(bagged, dx, dy) {
+  this.bagged = bagged;
+  if (this.bagged) {
+    this.dx = dx;
+    this.dy = dy;
+  }
+};
+
+Robot.prototype.isBagged = function() {
+  return this.bagged;
+};
+
+Robot.prototype.getDx = function() {
+  return this.dx;
+};
+
+Robot.prototype.getDy = function() {
+  return this.dy;
 };
 
 // Robot move
@@ -278,6 +301,17 @@ Level.prototype.hasGlue = function(x, y) {
     }
   }
   return false;
+};
+
+Level.prototype.removeGlue = function(x, y) {
+  var content = this.getContent(x, y);
+  for (var i = 0; i < content.length; ++i) {
+    if (content[i] instanceof Item) {
+      if (content[i].getType() == Item.GLUE_STAIN) {
+        content.splice(i, 1);
+      }
+    }
+  }
 };
 
 Level.prototype.getRobot = function(x, y) {
@@ -418,3 +452,8 @@ Level.LEVEL2 = [
   "# #       ### #   ##",
   "######### #   ### ##",
   "####################"];
+
+Level.LEVELS = [
+  Level.LEVEL1,
+  Level.LEVEL2
+];

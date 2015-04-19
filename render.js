@@ -13,6 +13,7 @@ var BOY_SPRITE = 20;
 
 var ROBOT_SPRITE = 30;
 var GLUED_ROBOT_SPRITE = 31;
+var BAGGED_ROBOT_SPRITE = 32;
 
 var MOVE_UP_SPRITE = 40;
 var MOVE_DOWN_SPRITE = 41;
@@ -102,7 +103,8 @@ Renderer.prototype.renderContents = function() {
           this.game.add.sprite(this.boardOffsetX + 32 * i, this.boardOffsetY + 32 * j, "tiles",
                                BOY_SPRITE, this.objects);
         } else if (obj instanceof Robot) {
-          var sprite = obj.isGlued() ? GLUED_ROBOT_SPRITE : ROBOT_SPRITE;
+          var sprite = obj.isGlued() ? GLUED_ROBOT_SPRITE :
+            obj.isBagged() ? BAGGED_ROBOT_SPRITE : ROBOT_SPRITE;
           this.game.add.sprite(this.boardOffsetX + 32 * i, this.boardOffsetY + 32 * j, "tiles",
                                sprite, this.objects);
         }
@@ -121,10 +123,16 @@ Renderer.prototype.renderArrows = function(level, x, y, mode) {
       mode == Mode.MOVE;
   };
   this.arrows = this.game.add.group(undefined, "arrows", true);
+  var s;
   if (y > 0 && level.getBoard(x, y - 1) != Level.WALL &&
       okWithMode(mode, x, y - 1)) {
-    this.game.add.sprite(this.boardOffsetX + 32 * x, this.boardOffsetY + 32 * (y - 1), "tiles",
-                         ARROW_UP_SPRITE[mode], this.arrows);
+    s = ARROW_UP_SPRITE[mode];
+    this.game.add.button(this.boardOffsetX + 32 * x, this.boardOffsetY + 32 * (y - 1), "tiles",
+                         function() {
+                           console.log("UP");
+                           gameState.tryStepGame(0, -1);
+                         }, this,
+                         s, s, s, s, this.arrows);
   }
   if (y < level.getHeight() - 1 && level.getBoard(x, y + 1) != Level.WALL &&
       okWithMode(mode, x, y + 1)) {
