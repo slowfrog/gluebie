@@ -99,9 +99,14 @@ gameState.stepGame = function(dx, dy) {
 
   case Mode.GLUE:
     contents = this.level.getContent(this.boy.getX() + dx, this.boy.getY() + dy);
-    if (contents.length == 0) {
+    var r = this.level.getRobot(this.boy.getX() + dx, this.boy.getY() + dy);
+    if (!r) {
       this.level.addEntity(Item.create(this.boy.getX() + dx, this.boy.getY() + dy,
                                        Item.GLUE_STAIN, 1));
+      this.glueCount -= 1;
+      this.mode = Mode.MOVE;
+    } else {
+      r.setGlued();
       this.glueCount -= 1;
       this.mode = Mode.MOVE;
     }
@@ -147,6 +152,9 @@ gameState.stepGame = function(dx, dy) {
 };
 
 gameState.stepRobot = function(r) {
+  if (r.isGlued()) {
+    return;
+  }
   var dx = Math.sign(this.boy.getX() - r.getX());
   var dy = Math.sign(this.boy.getY() - r.getY());
   // If not on same line or column, nothing

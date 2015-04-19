@@ -184,7 +184,17 @@ Robot.create = function(x, y) {
 };
 
 Robot.prototype._init_ = function(x, y) {
-  return Entity.prototype._init_.call(this, x, y);
+  Entity.prototype._init_.call(this, x, y);
+  this.glued = false;
+  return this;
+};
+
+Robot.prototype.setGlued = function() {
+  this.glued = true;
+};
+
+Robot.prototype.isGlued = function() {
+  return this.glued;
 };
 
 // Robot move
@@ -205,6 +215,7 @@ RobotMove.prototype.getDx = function() {
 RobotMove.prototype.getDy = function() {
   return this.dy;
 };
+
 
 // Level contents
 var Level = function() {};
@@ -255,6 +266,18 @@ Level.prototype.setBoard = function(x, y, v) {
 
 Level.prototype.getContent = function(x, y) {
   return this.content[y][x];
+};
+
+Level.prototype.hasGlue = function(x, y) {
+  var content = this.getContent(x, y);
+  for (var i = 0; i < content.length; ++i) {
+    if (content[i] instanceof Item) {
+      if (content[i].getType() == Item.GLUE_STAIN) {
+        return true;
+      }
+    }
+  }
+  return false;
 };
 
 Level.prototype.getRobot = function(x, y) {

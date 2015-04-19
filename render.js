@@ -12,6 +12,7 @@ var GLUE_STAIN_SPRITE = 6;
 var BOY_SPRITE = 20;
 
 var ROBOT_SPRITE = 30;
+var GLUED_ROBOT_SPRITE = 31;
 
 var MOVE_UP_SPRITE = 40;
 var MOVE_DOWN_SPRITE = 41;
@@ -101,8 +102,9 @@ Renderer.prototype.renderContents = function() {
           this.game.add.sprite(this.boardOffsetX + 32 * i, this.boardOffsetY + 32 * j, "tiles",
                                BOY_SPRITE, this.objects);
         } else if (obj instanceof Robot) {
+          var sprite = obj.isGlued() ? GLUED_ROBOT_SPRITE : ROBOT_SPRITE;
           this.game.add.sprite(this.boardOffsetX + 32 * i, this.boardOffsetY + 32 * j, "tiles",
-                               ROBOT_SPRITE, this.objects);
+                               sprite, this.objects);
         }
       }
     }
@@ -114,7 +116,9 @@ Renderer.prototype.renderArrows = function(level, x, y, mode) {
     this.arrows.destroy();
   }
   var okWithMode = function(mode, i, j) {
-    return (mode != Mode.BAG || !!level.getRobot(i, j));
+    return (mode == Mode.BAG && !!level.getRobot(i, j)) ||
+      (mode == Mode.GLUE && !level.hasGlue(i, j)) ||
+      mode == Mode.MOVE;
   };
   this.arrows = this.game.add.group(undefined, "arrows", true);
   if (y > 0 && level.getBoard(x, y - 1) != Level.WALL &&
