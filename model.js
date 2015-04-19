@@ -397,6 +397,7 @@ Level.parse = function(text) {
       case "*":
         l.addEntity(Item.create(x, y, Item.GLUE_STAIN, 1));
         break;
+      case "O":
       case "!":
         l.addEntity(Robot.create(x, y));
         break;
@@ -453,7 +454,25 @@ Level.LEVEL2 = [
   "######### #   ### ##",
   "####################"];
 
+Level.LEVEL3 = [
+  "#########>##########", 
+  "#      O     B    G#",
+  "################## #",
+  "#  B O #O       O  #",
+  "# # ######### # ## #",
+  "# # #   ##G## #    #",
+  "# # #O####  B ######",
+  "# # # #O##### B O ##",
+  "# # #O# #O  # ######",
+  "# # # #B# ### ######",
+  "# # #O# # #O#     G#",
+  "# # #G# #B#G## ###B#",
+  "# #            #O###",
+  "# ############## ###",
+  "#   B          G   #",
+  "#################X##"];
+
 Level.LEVELS = [
-  Level.LEVEL1,
+  Level.LEVEL3,
   Level.LEVEL2
 ];

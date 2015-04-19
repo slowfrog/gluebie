@@ -7,6 +7,10 @@ var menuState = {};
 menuState.preload = function() {
   game.load.image("startscreen", "startscreen.png");
   game.load.image("start", "start.png");
+  game.load.audio("other", ["other.mp3"], true);
+  game.load.audio("glue", ["glue.wav"], true);
+  game.load.audio("bag", ["bag.wav"], true);
+  game.load.audio("item", ["item.wav"], true);
 };
 
 menuState.create = function() {
@@ -14,6 +18,12 @@ menuState.create = function() {
   game.add.button(450, 430, "start", function() {
     game.state.start("game");
   });
+  this.tune = game.add.audio("other", 0.7, true, true);
+  this.tune.play('', 0, 0.4, true);
+};
+
+menuState.shutdown = function() {
+  this.tune.stop();
 };
 
 // MAIN GAME
@@ -22,6 +32,7 @@ var gameState = {};
 gameState.preload = function() {
   game.stage.backgroundColor = "#202020";
   game.load.spritesheet("tiles", "tiles.png", 32, 32);
+  game.load.audio("main", ["main.mp3"], true);
 };
 
 gameState.create = function() {
@@ -31,6 +42,8 @@ gameState.create = function() {
   this.glueCount = 0;
   this.bagCount = 0;
   this.renderer.renderBoard();
+  this.tune = game.add.audio("main", 0.7, true, true);
+  this.tune.play('', 0, 0.4, true);
 };
 
 gameState.startLevel = function() {
@@ -103,9 +116,11 @@ gameState.stepGame = function(dx, dy) {
         if (obj.getType() == Item.GLUE_TUBE) {
           this.glueCount += 1;
           contents.splice(i, 1);
+          game.add.audio("item", 0.7, true, true).play('', 0, 0.4, false);
         } else if (obj.getType() == Item.BAG_PILE) {
           this.bagCount += 1;
           contents.splice(i, 1);
+          game.add.audio("item", 0.7, true, true).play('', 0, 0.4, false);
         } else if (obj.getType() == Item.GLUE_STAIN) {
           console.log("YOU ARE STUCK!");
           contents.splice(i, 1);
@@ -124,10 +139,12 @@ gameState.stepGame = function(dx, dy) {
                                        Item.GLUE_STAIN, 1));
       this.glueCount -= 1;
       this.mode = Mode.MOVE;
+      game.add.audio("glue", 0.7, true, true).play('', 0, 0.4, false);
     } else {
       r.setGlued();
       this.glueCount -= 1;
       this.mode = Mode.MOVE;
+      game.add.audio("glue", 0.7, true, true).play('', 0, 0.4, false);
     }
     break;
 
@@ -138,6 +155,7 @@ gameState.stepGame = function(dx, dy) {
         contents[i].setBagged(true, dx, dy);
         this.bagCount -= 1;
         this.mode = Mode.MOVE;
+        game.add.audio("bag", 0.7, true, true).play('', 0, 0.4, false);
         break;
       }
     }
@@ -169,6 +187,7 @@ gameState.stepGame = function(dx, dy) {
     } else if (this.level.hasGlue(r.getX(), r.getY())) {
       r.setGlued();
       this.level.removeGlue(r.getX(), r.getY());
+      game.add.audio("glue", 0.7, true, true).play('', 0, 0.4, false);
     }
   }
 };
@@ -226,6 +245,7 @@ gameState.gotoLose = function() {
 };
 
 gameState.shutdown = function() {
+  this.tune.stop();
   this.clean();
 };
 
@@ -241,6 +261,12 @@ winState.create = function() {
   game.add.button(450, 430, "restart", function() {
     game.state.start("game");
   });
+  this.tune = game.add.audio("other", 0.7, true, true);
+  this.tune.play('', 0, 0.4, true);
+};
+
+winState.shutdown = function() {
+  this.tune.stop();
 };
 
 var loseState = {};
@@ -254,8 +280,13 @@ loseState.create = function() {
   game.add.button(450, 430, "restart", function() {
     game.state.start("game");
   });
+  this.tune = game.add.audio("other", 0.7, true, true);
+  this.tune.play('', 0, 0.4, true);
 };
 
+loseState.shutdown = function() {
+  this.tune.stop();
+};
 
 // Wrap it up
 game.state.add("menu", menuState);
