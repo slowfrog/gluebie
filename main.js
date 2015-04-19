@@ -5,7 +5,15 @@ var game = new Phaser.Game(640, 544, Phaser.AUTO, "gameDiv");
 // MENU
 var menuState = {};
 menuState.preload = function() {
-  game.stage.backgroundColor = "#303030";
+  game.load.image("startscreen", "startscreen.png");
+  game.load.image("start", "start.png");
+};
+
+menuState.create = function() {
+  game.add.image(0, 0, "startscreen");
+  game.add.button(450, 430, "start", function() {
+    game.state.start("game");
+  });
 };
 
 // MAIN GAME
@@ -190,8 +198,13 @@ gameState.stepRobot = function(r) {
     }
   }
 
-  if (r.isBagged() && this.level.getBoard(r.getX() + dx, r.getY() + dy) == Level.WALL) {
+  if (r.isBagged() &&
+      (this.level.getBoard(r.getX() + dx, r.getY() + dy) == Level.WALL ||
+       !!this.level.getRobot(r.getX() + dx, r.getY() + dy))) {
     r.setBagged(false);
+    return;
+  }
+  if (!!this.level.getRobot(r.getX() + dx, r.getY() + dy)) {
     return;
   }
   // Ok, robot moves
@@ -249,4 +262,4 @@ game.state.add("menu", menuState);
 game.state.add("game", gameState);
 game.state.add("win", winState);
 game.state.add("lose", loseState);
-game.state.start("game");
+game.state.start("menu");
