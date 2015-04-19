@@ -26,6 +26,7 @@ gameState.create = function() {
   this.renderer.renderBoard();
 
   this.arrows = game.input.keyboard.createCursorKeys();
+  this.mode = Mode.MOVE;
 };
 
 gameState.update = function() {
@@ -40,8 +41,20 @@ gameState.update = function() {
   } else if (this.arrows.left.downDuration(d)) {
     this.tryStepGame(-1, 0);
   }
+  if (game.input.keyboard.downDuration("G".charCodeAt(0), d) &&
+     this.glueCount > 0) {
+    this.mode = Mode.GLUE;
+  }
+  if (game.input.keyboard.downDuration("B".charCodeAt(0), d) &&
+     this.bagCount > 0) {
+    this.mode = Mode.BAG;
+  }
+  if (game.input.keyboard.downDuration("M".charCodeAt(0), d)) {
+    this.mode = Mode.MOVE;
+  }
 
   this.renderer.renderContents();
+  this.renderer.renderArrows(this.level, this.boy.getX(), this.boy.getY(), this.mode);
   this.renderer.renderInventory(this.glueCount, this.bagCount);
 };
 
@@ -57,28 +70,56 @@ gameState.tryStepGame = function(dx, dy) {
 };
 
 gameState.stepGame = function(dx, dy) {
-  this.boy.moveBy(dx, dy);
-  if (this.level.getBoard(this.boy.getX(), this.boy.getY()) == Level.EXIT) {
-    console.log("YOU WIN!");
-  }
-  var contents = this.level.getContent(this.boy.getX(), this.boy.getY());
-  for (var i = contents.length - 1; i >= 0; --i) {
-    var obj = contents[i];
-    if (obj instanceof Item) {
-      if (obj.getType() == Item.GLUE_TUBE) {
-        this.glueCount += 1;
-        contents.splice(i, 1);
-      } else if (obj.getType() == Item.BAG_PILE) {
-        this.bagCount += 1;
-        contents.splice(i, 1);
-      } else if (obj.getType() == Item.GLUE_STAIN) {
-        console.log("YOU ARE STUCK!");
-        contents.splice(i, 1);
-      }
-    } else if (obj instanceof Robot) {
-      console.log("YOU LOSE!");
+  var contents;
+  switch (this.mode) {
+  case Mode.MOVE:
+    this.boy.moveBy(dx, dy);
+    if (this.level.getBoard(this.boy.getX(), this.boy.getY()) == Level.EXIT) {
+      console.log("YOU WIN!");
     }
+    contents = this.level.getContent(this.boy.getX(), this.boy.getY());
+    for (var i = contents.length - 1; i >= 0; --i) {
+      var obj = contents[i];
+      if (obj instanceof Item) {
+        if (obj.getType() == Item.GLUE_TUBE) {
+          this.glueCount += 1;
+          contents.splice(i, 1);
+        } else if (obj.getType() == Item.BAG_PILE) {
+          this.bagCount += 1;
+          contents.splice(i, 1);
+        } else if (obj.getType() == Item.GLUE_STAIN) {
+          console.log("YOU ARE STUCK!");
+          contents.splice(i, 1);
+        }
+      } else if (obj instanceof Robot) {
+        console.log("YOU LOSE!");
+      }
+    }
+    break;
+
+  case Mode.GLUE:
+    contents = this.level.getContent(this.boy.getX() + dx, this.boy.getY() + dy);
+    if (contents.length == 0) {
+      this.level.addEntity(Item.create(this.boy.getX() + dx, this.boy.getY() + dy,
+                                       Item.GLUE_STAIN, 1));
+      this.glueCount -= 1;
+      this.mode = Mode.MOVE;
+    }
+    break;
+
+  case Mode.BAG:
+    contents = this.level.getContent(this.boy.getX() + dx, this.boy.getY() + dy);
+    for (var i = 0; i < contents.length; ++i) {
+      if (contents[i] instanceof Robot) {
+        // contents[i].bagRobot();
+        this.bagCount -= 1;
+        this.mode = Mode.MOVE;
+        break;
+      }
+    }
+    break;
   }
+
   // Look for robot moves
   var moves = [];
   for (var i = 0; i < this.level.getWidth(); ++i) {

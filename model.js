@@ -257,6 +257,16 @@ Level.prototype.getContent = function(x, y) {
   return this.content[y][x];
 };
 
+Level.prototype.getRobot = function(x, y) {
+  var content = this.getContent(x, y);
+  for (var i = 0; i < content.length; ++i) {
+    if (content[i] instanceof Robot) {
+      return content[i];
+    }
+  }
+  return null;
+};
+
 Level.prototype.addEntity = function(e) {
   this.getContent(e.getX(), e.getY()).push(e);
   e.addObserver(this);
@@ -340,6 +350,14 @@ Level.parse = function(text) {
   }
   return l;
 };
+
+// Current UI mode
+var Mode = {
+  MOVE: 1,
+  GLUE: 2,
+  BAG: 3
+};
+
 
 
 // LEVELS
