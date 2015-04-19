@@ -98,7 +98,7 @@ Entity.prototype.moveTo = function(x, y) {
     var prevY = this.y;
     this.x = x;
     this.y = y;
-    // norify move
+    // notify move
     this.notify(MoveEvent.create(prevX, prevY, this.x, this.y));
   }
 };
@@ -185,6 +185,25 @@ Robot.create = function(x, y) {
 
 Robot.prototype._init_ = function(x, y) {
   return Entity.prototype._init_.call(this, x, y);
+};
+
+// Robot move
+var RobotMove = function(r, dx, dy) {
+  this.robot = r;
+  this.dx = dx;
+  this.dy = dy;
+};
+
+RobotMove.prototype.getRobot = function() {
+  return this.robot;
+};
+
+RobotMove.prototype.getDx = function() {
+  return this.dx;
+};
+
+RobotMove.prototype.getDy = function() {
+  return this.dy;
 };
 
 // Level contents

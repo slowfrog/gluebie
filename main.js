@@ -58,6 +58,9 @@ gameState.tryStepGame = function(dx, dy) {
 
 gameState.stepGame = function(dx, dy) {
   this.boy.moveBy(dx, dy);
+  if (this.level.getBoard(this.boy.getX(), this.boy.getY()) == Level.EXIT) {
+    console.log("YOU WIN!");
+  }
   var contents = this.level.getContent(this.boy.getX(), this.boy.getY());
   for (var i = contents.length - 1; i >= 0; --i) {
     var obj = contents[i];
@@ -69,15 +72,59 @@ gameState.stepGame = function(dx, dy) {
         this.bagCount += 1;
         contents.splice(i, 1);
       } else if (obj.getType() == Item.GLUE_STAIN) {
-        // Boy is stuck!
+        console.log("YOU ARE STUCK!");
         contents.splice(i, 1);
+      }
+    } else if (obj instanceof Robot) {
+      console.log("YOU LOSE!");
+    }
+  }
+  // Look for robot moves
+  var moves = [];
+  for (var i = 0; i < this.level.getWidth(); ++i) {
+    for (var j = 0; j < this.level.getHeight(); ++j) {
+      var content = this.level.getContent(i, j);
+      for (var k = 0; k < content.length; ++k) {
+        var obj = content[k];
+        if (obj instanceof Robot) {
+          var move = this.stepRobot(obj);
+          if (!!move) {
+            moves.push(move);
+          }
+        }
       }
     }
   }
+  for (var i = 0; i < moves.length; ++i) {
+    var move = moves[i];
+    var r = move.getRobot();
+    r.moveBy(move.getDx(), move.getDy());
+    if ((r.getX() == this.boy.getX()) && (r.getY() == this.boy.getY())) {
+      console.log("ROBOT HIT YOU");
+    }
+  }
+};
+
+gameState.stepRobot = function(r) {
+  var dx = Math.sign(this.boy.getX() - r.getX());
+  var dy = Math.sign(this.boy.getY() - r.getY());
+  // If not on same line or column, nothing
+  if (dx != 0 && dy != 0) {
+    return;
+  }
+  var d = Math.max(Math.abs(this.boy.getX() - r.getX()),
+                   Math.abs(this.boy.getY() - r.getY()));
+  // If wall, no visibility
+  for (var i = 1; i < d; ++i) {
+    if (this.level.getBoard(r.getX() + dx * i, r.getY() + dy * i) == Level.WALL) {
+      return;
+    }
+  }
+  // Ok, robot moves
+  return new RobotMove(r, dx, dy);
 };
 
 // Wrap it up
 game.state.add("menu", menuState);
 game.state.add("game", gameState);
 game.state.start("game");
-                 
