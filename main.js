@@ -1,6 +1,6 @@
 "use strict";
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, "gameDiv");
+var game = new Phaser.Game(640, 544, Phaser.AUTO, "gameDiv");
 
 // MENU
 var menuState = {};
@@ -17,7 +17,7 @@ gameState.preload = function() {
 };
 
 gameState.create = function() {
-  this.level = Level.parse(Level.LEVEL1);
+  this.level = Level.parse(Level.LEVEL2);
   this.boy = Boy.create(this.level.getStartX(), this.level.getStartY());
   this.level.addEntity(this.boy);
   this.glueCount = 0;
@@ -75,7 +75,7 @@ gameState.stepGame = function(dx, dy) {
   case Mode.MOVE:
     this.boy.moveBy(dx, dy);
     if (this.level.getBoard(this.boy.getX(), this.boy.getY()) == Level.EXIT) {
-      console.log("YOU WIN!");
+      this.gotoWin();
     }
     contents = this.level.getContent(this.boy.getX(), this.boy.getY());
     for (var i = contents.length - 1; i >= 0; --i) {
@@ -92,7 +92,7 @@ gameState.stepGame = function(dx, dy) {
           contents.splice(i, 1);
         }
       } else if (obj instanceof Robot) {
-        console.log("YOU LOSE!");
+        this.gotoLose();
       }
     }
     break;
@@ -146,7 +146,7 @@ gameState.stepGame = function(dx, dy) {
     var r = move.getRobot();
     r.moveBy(move.getDx(), move.getDy());
     if ((r.getX() == this.boy.getX()) && (r.getY() == this.boy.getY())) {
-      console.log("ROBOT HIT YOU");
+      this.gotoLose();
     }
   }
 };
@@ -173,7 +173,45 @@ gameState.stepRobot = function(r) {
   return new RobotMove(r, dx, dy);
 };
 
+gameState.clean = function() {
+  this.renderer.clean();
+};
+
+gameState.gotoWin = function() {
+  game.state.start("win");
+};
+
+gameState.gotoLose = function() {
+  game.state.start("lose");
+};
+
+gameState.shutdown = function() {
+  this.clean();
+};
+
+// END STATES
+var winState = {};
+winState.preload = function() {
+  game.load.image("win", "win.png");
+};
+
+winState.create = function() {
+  game.add.image(0, 0, "win");
+};
+
+var loseState = {};
+loseState.preload = function() {
+  game.load.image("lose", "lose.png");
+};
+
+loseState.create = function() {
+  game.add.image(0, 0, "lose");
+};
+
+
 // Wrap it up
 game.state.add("menu", menuState);
 game.state.add("game", gameState);
+game.state.add("win", winState);
+game.state.add("lose", loseState);
 game.state.start("game");

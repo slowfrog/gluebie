@@ -66,7 +66,7 @@ var Renderer = function(level, boy, game) {
   this.game = game;
 
   this.boardOffsetX = 0;
-  this.boardOffsetY = 600 - 32 * this.level.getHeight();
+  this.boardOffsetY = 544 - 32 * this.level.getHeight();
   this.invOffsetX = 0;
   this.invOffsetY = 0;
 };
@@ -155,5 +155,20 @@ Renderer.prototype.renderInventory = function(glueCount, bagCount) {
   for (var i = 0; i < bagCount; ++i) {
     this.game.add.sprite(this.invOffsetX + 32 * (i + glueCount), this.invOffsetY, "tiles",
                          ITEM_SPRITE[Item.BAG_PILE], this.inventory);
+  }
+};
+
+Renderer.prototype.clean = function() {
+  if (this.arrows) {
+    this.arrows.destroy();
+  }
+  if (this.objects) {
+    this.objects.destroy();
+  }
+  if (this.board) {
+    this.board.destroy();
+  }
+  if (this.inventory) {
+    this.inventory.destroy();
   }
 };
