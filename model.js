@@ -175,6 +175,18 @@ Boy.prototype._init_ = function(x, y) {
   return Entity.prototype._init_.call(this, x, y);
 };
 
+// Robot
+var Robot = function() {};
+Robot.prototype = new Entity();
+
+Robot.create = function(x, y) {
+  return new Robot()._init_(x, y);
+};
+
+Robot.prototype._init_ = function(x, y) {
+  return Entity.prototype._init_.call(this, x, y);
+};
+
 // Level contents
 var Level = function() {};
 
@@ -296,6 +308,12 @@ Level.parse = function(text) {
       case "B":
         l.addEntity(Item.create(x, y, Item.BAG_PILE, 1));
         break;
+      case "*":
+        l.addEntity(Item.create(x, y, Item.GLUE_STAIN, 1));
+        break;
+      case "!":
+        l.addEntity(Robot.create(x, y));
+        break;
       default:
         l.setBoard(x, y, Level.CLEAR);
       }
@@ -312,13 +330,13 @@ Level.LEVEL1 = [
   "#.....#........#",
   "#...G....#.....#",
   "#...G..........#",
-  "#...G..........#",
+  "#...G......!...#",
   "#..............#",
   ">..............#",
-  "#..............#",
+  "#.......!......#",
   "#....B.........#",
   "#..............#",
-  "#.........B....#",
+  "#..*......B....#",
   "#..............#",
-  "#..............X",
+  "#.....!........X",
   "################"];
